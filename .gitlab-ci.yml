@@ -1,0 +1,23 @@
+stages:
+  - package
+
+variables:
+  user: zhou.wen
+  password: Qingteng901219ww
+  imagename: nebula-java #项目名称/docker image名称
+
+maven-package:
+  stage: package
+  only:
+    - qt-3.0.0
+  tags:
+    - deploy #执行任务的Gitlab Runner的标签
+  script:
+    - echo "----------copy project to /project/src/----------------"
+    - if [ -d "/project/src/$imagename" ]; then rm -rf /project/src/$imagename; fi
+    - mkdir -p  /project/src/$imagename
+    - cp -r $CI_PROJECT_DIR /project/src/        #拷贝Gitlab上的项目文件到执行目录
+    - cd /project/src/$imagename
+    - echo "--------- make push jar --------------"
+    - mvn clean deploy -Dmaven.test.skip=true -Dgpg.skip -Dmaven.javadoc.skip=true   #-u强制刷新本地仓库不存在release版和所有的snapshots版本
+    - echo "-----------make jar end------------------"
