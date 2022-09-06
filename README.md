@@ -51,7 +51,7 @@ For more versions, visit [releases](https://github.com/vesoft-inc/nebula-java/re
   <dependency>
     <groupId>com.vesoft</groupId>
     <artifactId>client</artifactId>
-    <version>qt-3.0.0</version>
+    <version>qt-3.0.0-SNAPSHOT</version>
   </dependency>
 ```
 There are the version correspondence between client and Nebula:
