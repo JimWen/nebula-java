@@ -108,6 +108,7 @@ public class Session implements Serializable {
                         connection.executeWithParameter(sessionID, stmt, map);
                 return new ResultSet(resp, timezoneOffset);
             } else {
+                log.error("executeWithParameter - reconnect fail addr:{} stmt:{}", connection.getServerAddress(), stmt);
                 throw new IOErrorException(IOErrorException.E_ALL_BROKEN,
                         "All servers are broken.");
             }
@@ -118,6 +119,7 @@ public class Session implements Serializable {
             return new ResultSet(resp, timezoneOffset);
         } catch (IOErrorException ie) {
             if (ie.getType() == IOErrorException.E_CONNECT_BROKEN) {
+                log.error("executeWithParameter - connect broken addr:{} stmt:{}", connection.getServerAddress(), stmt);
                 connectionIsBroken.set(true);
                 pool.updateServerStatus();
 

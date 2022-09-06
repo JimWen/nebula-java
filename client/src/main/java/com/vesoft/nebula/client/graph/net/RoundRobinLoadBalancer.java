@@ -4,6 +4,9 @@ import com.vesoft.nebula.client.graph.data.HostAddress;
 import com.vesoft.nebula.client.graph.data.SSLParam;
 import com.vesoft.nebula.client.graph.exception.ClientServerIncompatibleException;
 import com.vesoft.nebula.client.graph.exception.IOErrorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +15,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RoundRobinLoadBalancer implements LoadBalancer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RoundRobinLoadBalancer.class);
@@ -29,8 +30,7 @@ public class RoundRobinLoadBalancer implements LoadBalancer {
     private SSLParam sslParam;
     private boolean enabledSsl;
 
-    public RoundRobinLoadBalancer(List<HostAddress> addresses, int timeout,
-                                  double minClusterHealthRate) {
+    public RoundRobinLoadBalancer(List<HostAddress> addresses, int timeout, double minClusterHealthRate) {
         this.timeout = timeout;
         for (HostAddress addr : addresses) {
             this.addresses.add(addr);
@@ -40,8 +40,7 @@ public class RoundRobinLoadBalancer implements LoadBalancer {
         schedule.scheduleAtFixedRate(this::scheduleTask, 0, delayTime, TimeUnit.SECONDS);
     }
 
-    public RoundRobinLoadBalancer(List<HostAddress> addresses, int timeout, SSLParam sslParam,
-                                  double minClusterHealthRate) {
+    public RoundRobinLoadBalancer(List<HostAddress> addresses, int timeout, SSLParam sslParam, double minClusterHealthRate) {
         this(addresses, timeout, minClusterHealthRate);
         this.sslParam = sslParam;
         this.enabledSsl = true;
@@ -86,8 +85,15 @@ public class RoundRobinLoadBalancer implements LoadBalancer {
             }
             boolean pong = connection.ping();
             connection.close();
+
+            if (!pong) {
+                LOGGER.error("ping to {} false", addr);
+            } else {
+                LOGGER.warn("ping to {} true", addr);
+            }
             return pong;
         } catch (IOErrorException e) {
+            LOGGER.error("ping failed, {}", addr, e);
             return false;
         } catch (ClientServerIncompatibleException e) {
             LOGGER.error("version verify failed, ", e);
